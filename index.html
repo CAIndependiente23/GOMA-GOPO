@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+
+<style>
+body{
+    font-family:Arial;
+    margin:20px;
+}
+table{
+    border-collapse:collapse;
+    width:100%;
+}
+th,td{
+    border:1px solid #ccc;
+    padding:6px;
+    font-size:13px;
+}
+th{
+    background:#eee;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+</head>
+<body>
+
+<h2>Dashboard</h2>
+
+<table id="tabla">
+<thead></thead>
+<tbody></tbody>
+</table>
+
+<script>
+
+const csv="https://docs.google.com/spreadsheets/d/1KoUvKui4PJZ5XlmOOo9VIqrwXBNX8NIqZOtSVT1YXV8/export?format=csv&gid=0";
+
+Papa.parse(csv,{
+    download:true,
+    complete:function(res){
+
+        let datos=res.data;
+
+        let columnas=[0,1,2,3,4,5,6,8,10,15,16,19];
+
+        let thead="<tr>";
+
+        columnas.forEach(c=>{
+            thead+="<th>"+datos[0][c]+"</th>";
+        });
+
+        thead+="</tr>";
+
+        document.querySelector("thead").innerHTML=thead;
+
+        let html="";
+
+        for(let i=1;i<datos.length;i++){
+
+            if(datos[i].length==0) continue;
+
+            html+="<tr>";
+
+            columnas.forEach(c=>{
+
+                let valor=datos[i][c] || "";
+
+                if(c==16 && valor!=""){
+                    valor=`<a href="${valor}" target="_blank">Foto</a>`;
+                }
+
+                html+="<td>"+valor+"</td>";
+
+            });
+
+            html+="</tr>";
+
+        }
+
+        document.querySelector("tbody").innerHTML=html;
+
+    }
+});
+
+</script>
+
+</body>
+</html>
