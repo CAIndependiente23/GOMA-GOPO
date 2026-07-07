@@ -2,88 +2,158 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Dashboard GOMA</title>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
+
 body{
-    font-family:Arial;
+    font-family:Arial,Helvetica,sans-serif;
     margin:20px;
+    background:#f5f5f5;
 }
+
+h2{
+    margin-bottom:20px;
+}
+
+#estado{
+    margin-bottom:15px;
+    font-weight:bold;
+    color:#444;
+}
+
 table{
-    border-collapse:collapse;
     width:100%;
+    border-collapse:collapse;
+    background:white;
 }
+
+th{
+    background:#dddddd;
+    position:sticky;
+    top:0;
+}
+
 th,td{
     border:1px solid #ccc;
     padding:6px;
     font-size:13px;
+    text-align:left;
 }
-th{
-    background:#eee;
+
+tr:nth-child(even){
+    background:#fafafa;
 }
+
+a{
+    color:blue;
+}
+
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
 </head>
+
 <body>
 
 <h2>Dashboard</h2>
 
+<div id="estado">Cargando datos...</div>
+
 <table id="tabla">
+
 <thead></thead>
+
 <tbody></tbody>
+
 </table>
 
 <script>
 
-const csv="https://docs.google.com/spreadsheets/d/1KoUvKui4PJZ5XlmOOo9VIqrwXBNX8NIqZOtSVT1YXV8/export?format=csv&gid=0";
+const urlCSV="https://docs.google.com/spreadsheets/d/1KoUvKui4PJZ5XlmOOo9VIqrwXBNX8NIqZOtSVT1YXV8/export?format=csv&gid=0";
 
-Papa.parse(csv,{
-    download:true,
-    complete:function(res){
+Papa.parse(urlCSV,{
 
-        let datos=res.data;
+download:true,
 
-        let columnas=[0,1,2,3,4,5,6,8,10,15,16,19];
+skipEmptyLines:true,
 
-        let thead="<tr>";
+complete:function(resultado){
 
-        columnas.forEach(c=>{
-            thead+="<th>"+datos[0][c]+"</th>";
-        });
+console.log(resultado);
 
-        thead+="</tr>";
+if(resultado.errors.length){
 
-        document.querySelector("thead").innerHTML=thead;
+document.getElementById("estado").innerHTML="Error leyendo CSV";
 
-        let html="";
+console.log(resultado.errors);
 
-        for(let i=1;i<datos.length;i++){
+return;
 
-            if(datos[i].length==0) continue;
+}
 
-            html+="<tr>";
+const datos=resultado.data;
 
-            columnas.forEach(c=>{
+document.getElementById("estado").innerHTML=
+"Registros encontrados: "+(datos.length-1);
 
-                let valor=datos[i][c] || "";
+const columnas=[0,1,2,3,4,5,6,8,10,15,16,19];
 
-                if(c==16 && valor!=""){
-                    valor=`<a href="${valor}" target="_blank">Foto</a>`;
-                }
+let encabezado="<tr>";
 
-                html+="<td>"+valor+"</td>";
+columnas.forEach(c=>{
 
-            });
+encabezado+="<th>"+(datos[0][c]||"")+"</th>";
 
-            html+="</tr>";
+});
 
-        }
+encabezado+="</tr>";
 
-        document.querySelector("tbody").innerHTML=html;
+document.querySelector("#tabla thead").innerHTML=encabezado;
 
-    }
+let cuerpo="";
+
+for(let i=1;i<datos.length;i++){
+
+let fila=datos[i];
+
+if(fila.length==0) continue;
+
+cuerpo+="<tr>";
+
+columnas.forEach(c=>{
+
+let valor=fila[c] || "";
+
+if(c==16 && valor!=""){
+
+valor=`<a href="${valor}" target="_blank">Ver Foto</a>`;
+
+}
+
+cuerpo+="<td>"+valor+"</td>";
+
+});
+
+cuerpo+="</tr>";
+
+}
+
+document.querySelector("#tabla tbody").innerHTML=cuerpo;
+
+},
+
+error:function(err){
+
+document.getElementById("estado").innerHTML="No se pudo descargar el CSV";
+
+console.log(err);
+
+}
+
 });
 
 </script>
